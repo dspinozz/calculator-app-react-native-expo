@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  typecheck:
+    name: TypeScript Type Checking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx tsc --noEmit
+
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint

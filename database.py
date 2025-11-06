@@ -469,6 +469,58 @@ def get_all_tenants():
         cursor.execute('SELECT id, name, created_at FROM tenants ORDER BY name')
         return [dict(row) for row in cursor.fetchall()]
 
+def create_tenant(name, admin_user_id):
+    """Create a new tenant (admin only)"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Check if tenant name already exists
+        cursor.execute('SELECT id FROM tenants WHERE name = ?', (name,))
+        if cursor.fetchone():
+            return {'success': False, 'error': 'Tenant name already exists'}
+        
+        # Create tenant
+        cursor.execute('''
+            INSERT INTO tenants (name, created_at)
+            VALUES (?, CURRENT_TIMESTAMP)
+        ''', (name,))
+        tenant_id = cursor.lastrowid
+        
+        # Assign admin to the new tenant
+        cursor.execute('UPDATE users SET tenant_id = ? WHERE id = ?', (tenant_id, admin_user_id))
+        
+        conn.commit()
+        return {'success': True, 'tenant_id': tenant_id}
+
+def delete_tenant(tenant_id, admin_tenant_id):
+    """Delete a tenant (admin can only delete their own tenant)"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Verify tenant exists and admin owns it
+        cursor.execute('SELECT id FROM tenants WHERE id = ?', (tenant_id,))
+        if not cursor.fetchone():
+            return False  # Tenant doesn't exist
+        
+        if tenant_id != admin_tenant_id:
+            return False  # Admin can only delete their own tenant
+        
+        # Prevent deleting the default tenant (id=1)
+        if tenant_id == 1:
+            return False  # Cannot delete default tenant
+        
+        # Remove all users from this tenant (set tenant_id to NULL)
+        cursor.execute('UPDATE users SET tenant_id = NULL WHERE tenant_id = ?', (tenant_id,))
+        
+        # Delete audit logs for this tenant (optional cleanup)
+        cursor.execute('DELETE FROM audit_logs WHERE tenant_id = ?', (tenant_id,))
+        
+        # Delete the tenant record
+        cursor.execute('DELETE FROM tenants WHERE id = ?', (tenant_id,))
+        conn.commit()
+        
+        return cursor.rowcount > 0
+
 def check_duplicate_user(username=None, email=None, google_id=None):
     """Check if a user with given credentials already exists"""
     with get_db() as conn:

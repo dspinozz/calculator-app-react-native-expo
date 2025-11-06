@@ -1,34 +1,49 @@
 # Calculator Mobile App - React Native Expo
 
-A cross-platform calculator application built with React Native and Expo that works on iOS, Android, and Web.
+A cross-platform calculator application built with React Native, Expo, and TypeScript. Works seamlessly on iOS, Android, and Web with unified Drizzle ORM database support.
 
-## Features
+## 🚀 Features
 
 - ✅ **Cross-Platform**: Works on iOS, Android, and Web
+- ✅ **TypeScript**: Full type safety with strict mode
 - ✅ **Token-Based Authentication**: JWT tokens for secure authentication
+- ✅ **Google SSO**: Single Sign-On with Google OAuth 2.0
+- ✅ **Unified Database**: Drizzle ORM with sql.js (web) and expo-sqlite (mobile)
 - ✅ **Offline-Ready**: AsyncStorage for token persistence
+- ✅ **Role-Based Access Control (RBAC)**: Admin panel for user management
+- ✅ **Multi-Tenant Support**: Tenant isolation and management
+- ✅ **Audit Logging**: Complete audit trail for all operations
 - ✅ **Modern UI**: Beautiful gradient design matching web version
 - ✅ **Full Calculator**: Supports all operations including parentheses and exponents
+- ✅ **Code Quality**: ESLint configured for consistent code style
 
-## Architecture
+## 🛠 Tech Stack
 
-### Authentication
-- **Token-Based**: Uses JWT tokens stored in AsyncStorage
-- **Auto-Refresh**: Tokens are validated on each request
-- **Secure Storage**: Tokens stored securely on device
+### Frontend
+- **Framework**: React Native with Expo
+- **Language**: TypeScript (strict mode)
+- **Database**: Drizzle ORM
+  - Web: sql.js (WebAssembly SQLite)
+  - Mobile: expo-sqlite (native SQLite)
+- **Navigation**: React Navigation
+- **State Management**: React Context API
+- **Code Quality**: ESLint, TypeScript
+- **Build**: Expo CLI, EAS Build
 
-### Backend Integration
-- **REST API**: Communicates with Flask backend
-- **Bearer Tokens**: Authorization header with Bearer token
-- **Error Handling**: Graceful error handling and user feedback
+### Backend
+- **Framework**: Flask (Python)
+- **Database**: SQLite
+- **Authentication**: JWT tokens, Google OAuth 2.0
+- **Features**: Multi-tenancy, RBAC, Audit Logging
 
-## Setup
+## 📋 Prerequisites
 
-### Prerequisites
-- Node.js 16+ 
+- Node.js 16+
 - npm or yarn
-- Expo CLI: `npm install -g expo-cli`
+- Expo CLI: `npm install -g expo-cli` (or use `npx expo`)
 - iOS Simulator (for iOS) or Android Studio (for Android)
+
+## 🚀 Quick Start
 
 ### Installation
 
@@ -39,7 +54,7 @@ npm install
 ```
 
 2. Configure API URL:
-   - Edit `src/services/api.js`
+   - Edit `src/services/api.ts`
    - Update `API_BASE_URL` to your Flask backend URL
    - Development: `http://localhost:2000` (use your computer's IP for mobile devices)
    - Production: `https://your-production-url.com`
@@ -55,25 +70,31 @@ npm start
    - Press `w` for web
    - Scan QR code with Expo Go app on your phone
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 mobile-app/
-├── App.js                 # Main app entry point
+├── App.tsx                 # Main app entry point
 ├── src/
-│   ├── screens/          # Screen components
-│   │   ├── LoginScreen.js
-│   │   ├── CalculatorScreen.js
-│   │   └── NoTenantScreen.js
-│   ├── services/         # API services
-│   │   └── api.js       # API client with token management
-│   ├── utils/           # Utilities
-│   │   └── AuthContext.js  # Authentication context
-│   └── components/      # Reusable components
+│   ├── screens/           # Screen components
+│   │   ├── LoginScreen.tsx
+│   │   ├── CalculatorScreen.tsx
+│   │   └── NoTenantScreen.tsx
+│   ├── services/          # API services
+│   │   └── api.ts        # API client with token management
+│   ├── utils/            # Utilities
+│   │   └── AuthContext.tsx  # Authentication context
+│   ├── components/       # Reusable components
+│   │   └── DatabaseComponent.tsx
+│   └── db/               # Database layer
+│       ├── schema.ts     # Drizzle schema definitions
+│       └── db.ts         # Database initialization (web/mobile)
+├── tsconfig.json         # TypeScript configuration
+├── .eslintrc.js          # ESLint configuration
 └── package.json
 ```
 
-## Authentication Flow
+## 🔐 Authentication Flow
 
 1. **Login**: User enters credentials → API returns JWT token
 2. **Token Storage**: Token saved to AsyncStorage
@@ -81,42 +102,47 @@ mobile-app/
 4. **Auto-Refresh**: Token validated on each request
 5. **Logout**: Token removed from storage
 
-## API Endpoints Used
+## 💾 Database Architecture
 
-- `POST /login` - User login, returns JWT token
-- `POST /calculate` - Calculate expression
-- `GET /check-auth` - Verify token validity
-- `POST /logout` - Logout (optional, token removed client-side)
+### Unified Drizzle ORM
 
-## Token-Based Authentication
+The app uses Drizzle ORM with platform-specific implementations:
 
-### Why Tokens?
-- ✅ Sessions/cookies don't work on mobile
-- ✅ Tokens work consistently across platforms
-- ✅ Can be stored securely on device
-- ✅ Stateless - no server-side session needed
+- **Web**: sql.js (SQLite compiled to WebAssembly)
+  - Persisted in localStorage
+  - Auto-saves every 5 seconds
+  
+- **Mobile**: expo-sqlite (native SQLite)
+  - Native database storage
+  - Automatic persistence
 
-### Implementation
-- Token sent in header: `Authorization: Bearer <token>`
-- Token stored in AsyncStorage (secure)
-- Token expires after 24 hours
-- Backend validates token on each request
+### Schema
 
-## Database Verification
+See `DRIZZLE_IMPLEMENTATION.md` for detailed implementation.
 
-### Deduplication
-- ✅ Username: UNIQUE constraint
-- ✅ Email: UNIQUE constraint  
-- ✅ Google ID: UNIQUE constraint
-- ✅ Duplicate prevention logic in `authenticate_google_user()`
+## 🧪 Testing
 
-### SQLite
-- ✅ Using SQLite for database
-- ✅ Foreign key constraints enforced
-- ✅ Indexes for performance
-- ✅ Transaction safety
+### Type Checking
+```bash
+npx tsc --noEmit
+```
 
-## Development
+### Linting
+```bash
+npm run lint
+```
+
+See `TESTING.md` for comprehensive testing guide.
+
+## 📦 Deployment
+
+See `DEPLOYMENT.md` for detailed deployment instructions:
+- Web deployment (Vercel, Netlify, GitHub Pages)
+- iOS App Store deployment
+- Android Play Store deployment
+- Expo Go distribution
+
+## 🔧 Development
 
 ### Running on Different Platforms
 
@@ -139,21 +165,28 @@ npm run web
 
 **iOS:**
 ```bash
-expo build:ios
+eas build --platform ios
 ```
 
 **Android:**
 ```bash
-expo build:android
+eas build --platform android
 ```
 
 **Web:**
 ```bash
-expo export:web
+npx expo export:web
 ```
 
-## Troubleshooting
+## 📚 Documentation
 
+- `README.md` - This file
+- `ARCHITECTURE.md` - System architecture and design decisions
+- `TESTING.md` - Testing guide and checklist
+- `DEPLOYMENT.md` - Deployment instructions
+- `DRIZZLE_IMPLEMENTATION.md` - Database implementation details
+
+## 🐛 Troubleshooting
 ### Token Issues
 - Clear AsyncStorage: Settings → Clear Storage
 - Check API_BASE_URL is correct
@@ -168,12 +201,37 @@ expo export:web
 - Clear cache: `expo start -c`
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 
-## Environment Variables
+### TypeScript Errors
+- Run type checking: `npx tsc --noEmit`
+- Check for missing type definitions
+- Verify tsconfig.json settings
 
-For production, set:
-- `API_BASE_URL` in `src/services/api.js`
-- Backend `JWT_SECRET_KEY` must match Flask backend
+## 📝 License
 
-## License
+MIT License - see `LICENSE` file for details.
 
-Same as main project.
+## 🤝 Contributing
+
+This is a portfolio project. For questions or suggestions, please open an issue.
+
+## 🔗 API Endpoints
+
+## 🎯 Key Features Explained
+
+### TypeScript
+- Full type safety with strict mode
+- Type inference for Drizzle ORM
+- Typed navigation props
+- Typed API responses
+
+### Database
+- Unified interface for web and mobile
+- Automatic platform detection
+- Persistent storage on both platforms
+- Drizzle ORM for type-safe queries
+
+### Authentication
+- JWT token-based authentication
+- Secure token storage
+- Automatic token validation
+- Graceful error handling

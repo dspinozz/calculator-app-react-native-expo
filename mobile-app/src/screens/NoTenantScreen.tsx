@@ -1,4 +1,4 @@
-// src/screens/NoTenantScreen.js
+// src/screens/NoTenantScreen.tsx
 import React from 'react';
 import {
   View,
@@ -9,8 +9,17 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../utils/AuthContext';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-export default function NoTenantScreen({ navigation }) {
+type RootStackParamList = {
+  Login: undefined;
+  NoTenant: undefined;
+  Calculator: undefined;
+};
+
+type Props = NativeStackScreenProps<RootStackParamList, 'NoTenant'>;
+
+export default function NoTenantScreen({ navigation: _navigation }: Props) {
   const { user, logout } = useAuth();
 
   return (
@@ -28,7 +37,7 @@ export default function NoTenantScreen({ navigation }) {
         </Text>
         
         <Text style={styles.message}>
-          However, you haven't been assigned to a tenant yet. Please contact 
+          However, you haven&apos;t been assigned to a tenant yet. Please contact 
           your administrator to grant you access.
         </Text>
 
@@ -36,7 +45,7 @@ export default function NoTenantScreen({ navigation }) {
           <Text style={styles.infoTitle}>What does this mean?</Text>
           <Text style={styles.infoText}>• Your account is active but needs tenant assignment</Text>
           <Text style={styles.infoText}>• An administrator must assign you to a tenant</Text>
-          <Text style={styles.infoText}>• Once assigned, you'll be able to use all features</Text>
+          <Text style={styles.infoText}>• Once assigned, you&apos;ll be able to use all features</Text>
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>

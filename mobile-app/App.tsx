@@ -1,4 +1,4 @@
-// App.js
+// App.tsx
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -8,10 +8,16 @@ import LoginScreen from './src/screens/LoginScreen';
 import CalculatorScreen from './src/screens/CalculatorScreen';
 import NoTenantScreen from './src/screens/NoTenantScreen';
 
-const Stack = createNativeStackNavigator();
+export type RootStackParamList = {
+  Login: undefined;
+  NoTenant: undefined;
+  Calculator: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigator() {
-  const { user, loading, token } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -26,7 +32,7 @@ function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!user ? (
           <Stack.Screen name="Login" component={LoginScreen} />
-        ) : !user.tenant_id ? (
+        ) : !user.tenant_id && user.role !== "admin" ? (
           <Stack.Screen name="NoTenant" component={NoTenantScreen} />
         ) : (
           <Stack.Screen name="Calculator" component={CalculatorScreen} />

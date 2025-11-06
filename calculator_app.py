@@ -13,7 +13,7 @@ from database import (
     init_db, authenticate_user, authenticate_google_user, has_permission, log_audit, 
     get_audit_logs, get_user_permissions, get_user_settings, update_user_settings,
     get_users_without_tenant, assign_user_to_tenant, get_all_tenants, create_user_by_email,
-    remove_user_from_tenant
+    remove_user_from_tenant, delete_tenant, create_tenant
 )
 
 class Calculator:
@@ -162,7 +162,8 @@ except Exception as e:
 # CORS configuration - use environment variable or default to development
 # Set CORS_ORIGINS in .env for production (comma-separated list)
 # Example: CORS_ORIGINS=http://localhost:2000,https://yourdomain.com
-cors_origins = os.environ.get('CORS_ORIGINS', '').split(',') if os.environ.get('CORS_ORIGINS') else ['*']
+default_origins = ["http://100.83.165.66:19006", "http://localhost:19006", "http://127.0.0.1:19006"]
+cors_origins = os.environ.get("CORS_ORIGINS", "").split(",") if os.environ.get("CORS_ORIGINS") else default_origins
 # Filter out empty strings
 cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
 
@@ -628,19 +629,68 @@ def check_auth():
 @login_required
 @permission_required('manage_users')
 def get_all_user_settings():
-    """Get all user settings (admin only)"""
+    """Get all user settings for admin's tenant only (admin only)"""
     from database import get_db
+    tenant_id = session.get('tenant_id')
+    if not tenant_id:
+        return jsonify({'error': 'You must be assigned to a tenant'}), 403
+    
+    # Ensure tenant_id is an integer (session might store it as string)
+    try:
+        tenant_id = int(tenant_id)
+    except (ValueError, TypeError):
+        import logging
+        logging.error(f'Invalid tenant_id in session: {tenant_id} (type: {type(tenant_id)})')
+        return jsonify({'error': 'Invalid tenant_id in session'}), 500
+    
     with get_db() as conn:
         cursor = conn.cursor()
+        # Only return users in the admin's tenant (tenant_id must match exactly, not NULL)
+        # Use IS NOT NULL first to ensure we don't match NULL values
+        # Include tenant_id in SELECT so we can verify it directly
         cursor.execute('''
-            SELECT u.id, u.username, 
+            SELECT u.id, u.username, u.tenant_id,
                    COALESCE(us.allow_parentheses, 1) as allow_parentheses,
                    COALESCE(us.allow_exponents, 1) as allow_exponents
             FROM users u
             LEFT JOIN user_settings us ON u.id = us.user_id
+            WHERE u.tenant_id IS NOT NULL AND u.tenant_id = ?
             ORDER BY u.username
-        ''')
-        users = [dict(row) for row in cursor.fetchall()]
+        ''', (tenant_id,))
+        rows = cursor.fetchall()
+        users = []
+        
+        # Convert rows to dicts and verify tenant_id for each user
+        for row in rows:
+            user_dict = dict(row)
+            user_id = user_dict['id']
+            row_tenant_id = user_dict.get('tenant_id')
+            
+            # CRITICAL: Always verify from database (don't trust the row)
+            cursor.execute('SELECT tenant_id FROM users WHERE id = ?', (user_id,))
+            actual_tenant = cursor.fetchone()
+            actual_tenant_id = actual_tenant[0] if actual_tenant else None
+            
+            # Only include if tenant_id matches and is not NULL
+            # Use strict comparison: must be integer, must match exactly, must not be None
+            if (actual_tenant_id is not None and 
+                isinstance(actual_tenant_id, int) and
+                actual_tenant_id == tenant_id):
+                # Remove tenant_id from response (not needed by frontend)
+                user_dict.pop('tenant_id', None)
+                users.append(user_dict)
+            else:
+                import logging
+                logging.warning(f'FILTERED OUT: user {user_dict.get("username")} (ID: {user_id}) - actual_tenant_id={actual_tenant_id} (type: {type(actual_tenant_id)}), expected={tenant_id} (type: {type(tenant_id)})')
+                # Explicitly skip this user
+                continue
+        
+        # Debug logging
+        import logging
+        logging.info(f'get_all_user_settings: tenant_id={tenant_id}, returned {len(users)} users')
+        logging.info(f'User IDs: {[u["id"] for u in users]}')
+        logging.info(f'Usernames: {[u["username"] for u in users]}')
+        
         return jsonify({'users': users})
 
 @app.route('/admin/user-settings/<int:target_user_id>', methods=['PUT'])
@@ -834,14 +884,23 @@ def remove_tenant():
     try:
         result = remove_user_from_tenant(user_id, admin_tenant_id)
         if result:
+            # Get username for audit log before removal
+            from database import get_db
+            with get_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute('SELECT username FROM users WHERE id = ?', (user_id,))
+                user_row = cursor.fetchone()
+                removed_username = user_row[0] if user_row else f'user_id_{user_id}'
+            
             ip_address, user_agent = get_client_info()
             try:
                 log_audit(
                     user_id=session['user_id'],
                     username=session['username'],
-                    action='remove_tenant',
+                    action='remove_user_from_tenant',
                     resource='admin',
-                    expression=f'Removed user_id {user_id} from tenant_id {admin_tenant_id}',
+                    expression=f'Removed user {removed_username} (ID: {user_id}) from tenant_id {admin_tenant_id}',
+                    result=f'User {removed_username} removed from tenant',
                     ip_address=ip_address,
                     user_agent=user_agent,
                     tenant_id=admin_tenant_id
@@ -849,7 +908,7 @@ def remove_tenant():
             except Exception as e:
                 import logging
                 logging.error(f'Error logging audit: {e}')
-            return jsonify({'success': True, 'message': 'User removed from tenant successfully'})
+            return jsonify({'success': True, 'message': f'User {removed_username} removed from tenant successfully'})
         else:
             return jsonify({'error': 'Failed to remove user - user may not be in your tenant'}), 400
     except Exception as e:
@@ -885,4 +944,4 @@ def refresh_token():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=2000, debug=False)
+    app.run(host='0.0.0.0', port=5002, debug=False)
