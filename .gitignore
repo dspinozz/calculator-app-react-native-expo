@@ -78,4 +78,14 @@ instance/
 # Backup files
 *.backup
 calculator_app.py.backup
+*.backup2
+*.backup3
+*_original.*
+
+# AI CLI cache
+.aicli/
+
+# Example/test files
+mobile-api-service.ts
+mobile-example.tsx
 
