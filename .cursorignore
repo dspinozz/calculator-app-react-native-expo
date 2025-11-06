@@ -1,0 +1,49 @@
+# Exclude markdown files from AI assistance (except README.md)
+*.md
+!README.md
+
+# Exclude other documentation
+docs/
+*.txt
+!requirements.txt
+
+# Exclude test outputs
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Exclude logs
+*.log
+logs/
+
+# Exclude database
+*.db
+*.sqlite
+*.sqlite3
+
+# Exclude environment files
+.env
+.env.local
+.env.*.local
+
+# Exclude Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Exclude IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
+
+# Exclude temporary files
+*.tmp
+*.bak
+*.backup
+

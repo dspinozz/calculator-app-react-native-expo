@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Environment variables (CRITICAL - contains secrets)
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Database files (CRITICAL - contains data)
+*.db
+*.sqlite
+*.sqlite3
+calculator.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+app.log
+/tmp/calc.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# Flask
+instance/
+.webassets-cache
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+/tmp/
+
+# Docker
+.dockerignore
+
+# Backup files
+*.backup
+calculator_app.py.backup
+

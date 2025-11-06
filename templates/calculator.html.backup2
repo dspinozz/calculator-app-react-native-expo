@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calculator</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .calculator-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .display {
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: right;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .expression {
+            font-size: 1.2rem;
+            color: #666;
+            min-height: 30px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .result {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            min-height: 40px;
+        }
+        
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 20px 10px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .number-btn {
+            background-color: #fff;
+            color: #333;
+        }
+        
+        .operator-btn {
+            background-color: #ff9500;
+            color: white;
+        }
+        
+        .function-btn {
+            background-color: #a5a5a5;
+            color: white;
+        }
+        
+        .equals-btn {
+            background-color: #ff9500;
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .clear-btn {
+            background-color: #ff3b30;
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 500px) {
+            .calculator-container {
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 15px 5px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header">
+            <h1>🧮 Advanced Calculator</h1>
+            <p>Supports parentheses, exponents, and more!</p>
+        </div>
+        
+        <div class="display">
+            <div class="expression" id="expression">0</div>
+            <div class="result" id="result">0</div>
+        </div>
+        
+        <div class="buttons-grid">
+            <button class="btn function-btn" onclick="clearAll()">C</button>
+            <button class="btn function-btn" onclick="backspace()">⌫</button>
+            <button class="btn function-btn" onclick="appendToExpression('%')">%</button>
+            <button class="btn operator-btn" onclick="appendToExpression('/')">÷</button>
+            
+            <button class="btn number-btn" onclick="appendToExpression('7')">7</button>
+            <button class="btn number-btn" onclick="appendToExpression('8')">8</button>
+            <button class="btn number-btn" onclick="appendToExpression('9')">9</button>
+            <button class="btn operator-btn" onclick="appendToExpression('*')">×</button>
+            
+            <button class="btn number-btn" onclick="appendToExpression('4')">4</button>
+            <button class="btn number-btn" onclick="appendToExpression('5')">5</button>
+            <button class="btn number-btn" onclick="appendToExpression('6')">6</button>
+            <button class="btn operator-btn" onclick="appendToExpression('-')">−</button>
+            
+            <button class="btn number-btn" onclick="appendToExpression('1')">1</button>
+            <button class="btn number-btn" onclick="appendToExpression('2')">2</button>
+            <button class="btn number-btn" onclick="appendToExpression('3')">3</button>
+            <button class="btn operator-btn" onclick="appendToExpression('+')">+</button>
+            
+            <button class="btn number-btn" onclick="appendToExpression('(')">(</button>
+            <button class="btn number-btn" onclick="appendToExpression('0')">0</button>
+            <button class="btn number-btn" onclick="appendToExpression(')')">)</button>
+            <button class="btn operator-btn" onclick="appendToExpression('^')">x^y</button>
+            
+            <button class="btn equals-btn" onclick="calculateResult()">=</button>
+        </div>
+        
+        <div class="footer">
+            <p>Works with Tailscale mesh network</p>
+        </div>
+    </div>
+    
+    <script>
+        let currentExpression = '';
+        
+        function appendToExpression(value) {
+            // Prevent adding multiple operators at the end
+            if (['+', '-', '*', '/', '^', '('].includes(value)) {
+                if (currentExpression === '' || ['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
+                    return;
+                }
+            }
+            
+            // Prevent adding closing parenthesis without opening
+            if (value === ')') {
+                const openParenCount = (currentExpression.match(/\(/g) || []).length;
+                const closeParenCount = (currentExpression.match(/\)/g) || []).length;
+                if (openParenCount <= closeParenCount) {
+                    return;
+                }
+            }
+            
+            currentExpression += value;
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            document.getElementById('expression').textContent = currentExpression || '0';
+            document.getElementById('result').textContent = '0';
+        }
+        
+        function clearAll() {
+            currentExpression = '';
+            updateDisplay();
+        }
+        
+        function backspace() {
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay();
+        }
+        
+        async function calculateResult() {
+            if (currentExpression === '') {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ expression: currentExpression })
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('result').textContent = data.result;
+                
+                // Clear expression after successful calculation
+                currentExpression = '';
+                setTimeout(() => {
+                    updateDisplay();
+                }, 2000);
+                
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error';
+            }
+        }
+        
+        // Allow keyboard input
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            
+            if ('0123456789+-*/^()%'.includes(key)) {
+                appendToExpression(key);
+            } else if (key === 'Enter') {
+                calculateResult();
+            } else if (key === 'Escape') {
+                clearAll();
+            } else if (key === 'Backspace') {
+                backspace();
+            }
+        });
+        
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>

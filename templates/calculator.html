@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calculator</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .calculator-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+        }
+        
+        .user-info span {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            padding: 8px 15px;
+            background-color: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background-color: #e02e24;
+            transform: translateY(-1px);
+        }
+        
+        .error-message {
+            color: #ff3b30;
+            padding: 10px;
+            background-color: #ffe5e5;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .display {
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: right;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .expression {
+            font-size: 1.2rem;
+            color: #666;
+            min-height: 30px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .result {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            min-height: 40px;
+        }
+        
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 20px 10px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .number-btn {
+            background-color: #fff;
+            color: #333;
+        }
+        
+        .operator-btn {
+            background-color: #ff9500;
+            color: white;
+        }
+        
+        .function-btn {
+            background-color: #a5a5a5;
+            color: white;
+        }
+        
+        .equals-btn {
+            background-color: #ff9500;
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .clear-btn {
+            background-color: #ff3b30;
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 500px) {
+            .calculator-container {
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 15px 5px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="user-info">
+            <span id="usernameDisplay">User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+        {% if is_admin %}
+        <div style="margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                <span style="font-size: 1.5rem; margin-right: 10px;">⚙️</span>
+                <strong style="color: white; font-size: 1.1rem;">Admin Panel</strong>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button onclick="showAdminPanel()" style="padding: 12px 20px; background: rgba(255,255,255,0.95); color: #2196F3; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex: 1; min-width: 180px;">
+                    🔒 Manage Restrictions
+                </button>
+                <button onclick="showTenantAssignment()" style="padding: 12px 20px; background: rgba(255,255,255,0.95); color: #9C27B0; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex: 1; min-width: 180px;">
+                    👥 Manage Tenants
+                </button>
+                <button onclick="showAuditLogs()" style="padding: 12px 20px; background: rgba(255,255,255,0.95); color: #4CAF50; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex: 1; min-width: 180px;">
+                    📊 View Logs
+                </button>
+            </div>
+        </div>
+        {% endif %}
+        <div class="header">
+            <h1>🧮 Advanced Calculator</h1>
+            <p>Supports parentheses, exponents, and more!</p>
+        </div>
+        
+        <div class="display">
+            <div class="expression" id="expression">0</div>
+            <div class="result" id="result">0</div>
+        </div>
+        
+        <div class="buttons-grid">
+            <!-- Row 1: Functions and operators -->
+            <button class="btn function-btn" onclick="clearAll()">C</button>
+            <button class="btn function-btn" onclick="backspace()">⌫</button>
+            <button class="btn operator-btn" onclick="appendToExpression('/')">÷</button>
+            <button class="btn operator-btn" onclick="appendToExpression('*')">×</button>
+            
+            <!-- Row 2: 7, 8, 9, - -->
+            <button class="btn number-btn" onclick="appendToExpression('7')">7</button>
+            <button class="btn number-btn" onclick="appendToExpression('8')">8</button>
+            <button class="btn number-btn" onclick="appendToExpression('9')">9</button>
+            <button class="btn operator-btn" onclick="appendToExpression('-')">−</button>
+            
+            <!-- Row 3: 4, 5, 6, + -->
+            <button class="btn number-btn" onclick="appendToExpression('4')">4</button>
+            <button class="btn number-btn" onclick="appendToExpression('5')">5</button>
+            <button class="btn number-btn" onclick="appendToExpression('6')">6</button>
+            <button class="btn operator-btn" onclick="appendToExpression('+')">+</button>
+            
+            <!-- Row 4: 1, 2, 3, exponent -->
+            <button class="btn number-btn" onclick="appendToExpression('1')">1</button>
+            <button class="btn number-btn" onclick="appendToExpression('2')">2</button>
+            <button class="btn number-btn" onclick="appendToExpression('3')">3</button>
+            <button class="btn operator-btn" id="expBtn" onclick="appendToExpression('^')">x^y</button>
+            
+            <!-- Row 5: 0, ), ( -->
+            <button class="btn number-btn" onclick="appendToExpression('0')">0</button>
+            <button class="btn number-btn" id="parenCloseBtn" onclick="appendToExpression(')')">)</button>
+            <button class="btn number-btn" id="parenOpenBtn" onclick="appendToExpression('(')">(</button>
+            <button class="btn operator-btn" style="visibility: hidden;">&nbsp;</button>
+            
+            <!-- Row 6: Equals button spans 2 columns -->
+            <button class="btn equals-btn" onclick="calculateResult()">=</button>
+        </div>
+        
+        <div class="footer">
+            <p>Works with Tailscale mesh network</p>
+        </div>
+    </div>
+    
+    <script>
+        let currentExpression = '';
+        
+        function convertToPercentage() {
+            // Simple, immediate operation: convert last number to percentage
+            try {
+                console.log('convertToPercentage called, currentExpression:', currentExpression);
+                
+                if (!currentExpression || currentExpression.trim() === '') {
+                    showError('No number to convert');
+                    return;
+                }
+            
+            const expr = currentExpression.trim();
+            
+            // Find all numbers in the expression (more robust pattern)
+            const numberPattern = /-?\d+(\.\d+)?/g;
+            const matches = [];
+            let match;
+            
+            // Reset regex lastIndex to start from beginning
+            numberPattern.lastIndex = 0;
+            
+            while ((match = numberPattern.exec(expr)) !== null) {
+                matches.push({
+                    value: match[0],
+                    index: match.index,
+                    length: match[0].length,
+                    fullMatch: match[0]
+                });
+            }
+            
+            if (matches.length === 0) {
+                showError('No number found');
+                return;
+            }
+            
+            // Get the last (rightmost) number
+            const lastMatch = matches[matches.length - 1];
+            const originalNum = lastMatch.value;
+            const numVal = parseFloat(originalNum);
+            
+            if (isNaN(numVal) || numVal === 0) {
+                if (numVal === 0) {
+                    // 0% is still 0, no change
+                    return;
+                }
+                showError('Invalid number');
+                return;
+            }
+            
+            // Convert to percentage
+            const pctValue = numVal / 100;
+            
+            // Format: ensure proper decimal format
+            let pctStr = Math.abs(pctValue).toFixed(10)
+                .replace(/0+$/, '')  // Remove trailing zeros
+                .replace(/\.$/, ''); // Remove trailing dot
+            
+            // Ensure leading zero
+            if (pctStr.startsWith('.')) {
+                pctStr = '0' + pctStr;
+            }
+            
+            // Add sign
+            if (pctValue < 0) {
+                pctStr = '-' + pctStr;
+            }
+            
+            if (pctStr === '' || pctStr === '-') {
+                pctStr = '0';
+            }
+            
+            // Replace in expression
+            const before = expr.substring(0, lastMatch.index);
+            const after = expr.substring(lastMatch.index + lastMatch.length);
+            currentExpression = before + pctStr + after;
+            
+            console.log('Converted', originalNum, 'to', pctStr, 'New expression:', currentExpression);
+            
+            // Immediately update display
+            updateDisplay();
+            
+            // Force a visual update
+            const exprEl = document.getElementById('expression');
+            if (exprEl) {
+                exprEl.textContent = currentExpression || '0';
+            }
+            } catch (error) {
+                console.error('Error in convertToPercentage:', error);
+                showError('Error converting percentage: ' + error.message);
+            }
+        }
+        
+        function appendToExpression(value) {
+            // % is handled by convertToPercentage() - shouldn't reach here
+            if (value === '%') {
+                convertToPercentage();
+                return;
+            }
+            
+            const lastChar = currentExpression.slice(-1);
+            const openParenCount = (currentExpression.match(/\(/g) || []).length;
+            const closeParenCount = (currentExpression.match(/\)/g) || []).length;
+            
+            // Handle opening parenthesis
+            if (value === '(') {
+                // Allow '(' at start, after operators, or after opening parenthesis
+                if (currentExpression === '' || ['+', '-', '*', '/', '^', '('].includes(lastChar)) {
+                    currentExpression += value;
+                    updateDisplay();
+                }
+                return;
+            }
+            
+            // Handle closing parenthesis
+            if (value === ')') {
+                // Allow ')' only if there are unmatched open parens and last char is not an operator
+                if (openParenCount > closeParenCount && !['+', '-', '*', '/', '^', '('].includes(lastChar)) {
+                    currentExpression += value;
+                    updateDisplay();
+                }
+                return;
+            }
+            
+            // Handle operators (except '(' which is handled above)
+            if (['+', '-', '*', '/', '^'].includes(value)) {
+                // Don't allow operators at start (except '-' for negative numbers)
+                if (currentExpression === '' && value !== '-') {
+                    return;
+                }
+                // Don't allow consecutive operators, but allow '-' after operators for negative numbers
+                if (['+', '-', '*', '/', '^'].includes(lastChar)) {
+                    // Allow '-' after operators for negative numbers
+                    if (value === '-') {
+                        currentExpression += value;
+                        updateDisplay();
+                    }
+                    return;
+                }
+                // Don't allow operators immediately after opening parenthesis (except '-' for negative)
+                if (lastChar === '(' && value !== '-') {
+                    return;
+                }
+                currentExpression += value;
+                updateDisplay();
+                return;
+            }
+            
+            // Handle numbers and valid characters
+            // Only allow valid calculator characters
+            if (!/^[0-9+\-*/().]$/.test(value)) {
+                return;
+            }
+            
+            // Allow numbers after anything except closing parenthesis without operator
+            if (lastChar === ')' && /[0-9]/.test(value)) {
+                return;
+            }
+            
+            currentExpression += value;
+            updateDisplay();
+        }
+        
+        function updateDisplay(preserveResult = false) {
+            document.getElementById('expression').textContent = currentExpression || '0';
+            if (!preserveResult) {
+                document.getElementById('result').textContent = '0';
+            }
+        }
+        
+        function clearAll() {
+            currentExpression = '';
+            updateDisplay();
+        }
+        
+        function backspace() {
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay();
+        }
+        
+        async function calculateResult() {
+            if (currentExpression === '') {
+                return;
+            }
+            
+            // Clean expression before sending
+            let expr = String(currentExpression || '').trim();
+            
+            // Basic validation - remove invalid characters
+            expr = expr.replace(/[^0-9+\-*/().^\s]/g, '');
+            expr = expr.replace(/\s+/g, ' ').trim();
+            
+            // Step 5: Validate expression structure
+            if (expr === '' || expr === ' ') {
+                showError('Empty expression');
+                return;
+            }
+            
+            if (/[+\-*/^]{2,}/.test(expr)) {
+                showError('Invalid expression: consecutive operators');
+                return;
+            }
+            
+            if (/[+\-*/^]$/.test(expr)) {
+                showError('Invalid expression: ends with operator');
+                return;
+            }
+            
+            // Step 6: Final check - ensure no invalid characters remain
+            if (/[^0-9+\-*/().^\s]/.test(expr)) {
+                console.error('ERROR: Invalid characters found:', expr);
+                showError('Invalid characters in expression');
+                return;
+            }
+            
+            try {
+                // Debug: log what we're sending
+                console.log('Sending expression:', expr);
+                console.log('Original expression:', currentExpression);
+                
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ expression: expr })
+                });
+                
+                if (response.status === 401) {
+                    // Not authenticated, redirect to login
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (response.status === 403) {
+                    // Permission denied
+                    showError('Permission denied. You do not have permission to calculate.');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                document.getElementById('result').textContent = data.result;
+                
+                // Keep the result visible, clear expression for next calculation
+                currentExpression = '';
+                // Don't reset result - preserve it so it stays visible
+                document.getElementById('expression').textContent = '0';
+                
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error';
+                showError('Connection error. Please try again.');
+            }
+        }
+        
+        async function logout() {
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            }
+        }
+        
+        function showError(message, type = 'error') {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            if (type === 'success') {
+                errorDiv.style.backgroundColor = '#d4edda';
+                errorDiv.style.color = '#155724';
+            } else {
+                errorDiv.style.backgroundColor = '#ffe5e5';
+                errorDiv.style.color = '#ff3b30';
+            }
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Initialize userSettings - ALWAYS default to true (buttons visible)
+        // Only admin can restrict, and restrictions are checked server-side
+        let userSettings = {
+            allow_parentheses: true,
+            allow_exponents: true
+        };
+        
+        // Don't set to false from template - let server-side validation handle it
+        // Buttons will be visible, server will reject if restricted
+        
+        // Check authentication on page load
+        async function checkAuth() {
+            try {
+                const response = await fetch('/check-auth');
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (data.authenticated) {
+                    document.getElementById('usernameDisplay').textContent = data.username || 'User';
+                    // Update settings from server
+                    if (data.settings) {
+                        userSettings = data.settings;
+                        updateUIForRestrictions();
+                    }
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = '/login';
+            }
+        }
+        
+        function updateUIForRestrictions() {
+            // Buttons are ALWAYS visible - server validates restrictions
+            // This function is kept for compatibility but doesn't hide buttons
+            const parenOpenBtn = document.getElementById('parenOpenBtn');
+            const parenCloseBtn = document.getElementById('parenCloseBtn');
+            const expBtn = document.getElementById('expBtn');
+            
+            // Always show buttons - let server handle validation
+            if (parenOpenBtn) {
+                parenOpenBtn.style.display = '';
+                parenOpenBtn.style.visibility = 'visible';
+            }
+            if (parenCloseBtn) {
+                parenCloseBtn.style.display = '';
+                parenCloseBtn.style.visibility = 'visible';
+            }
+            if (expBtn) {
+                expBtn.style.display = '';
+                expBtn.style.visibility = 'visible';
+            }
+        }
+        
+        {% if is_admin %}
+        async function showAdminPanel() {
+            // Remove any existing modals first to prevent overlay stacking
+            removeAllModals();
+            
+            try {
+                const response = await fetch('/admin/user-settings');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Failed to load user settings:', response.status, errorText);
+                    showError(`Failed to load user settings: ${response.status} ${response.statusText}`);
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (!data.users || !Array.isArray(data.users)) {
+                    console.error('Invalid response format:', data);
+                    showError('Invalid response format from server');
+                    return;
+                }
+                
+                let html = '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 1000; max-width: 500px; width: 90%;">';
+                html += '<h2>Manage User Restrictions</h2>';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<tr><th>User</th><th>Parentheses</th><th>Exponents</th><th>Actions</th></tr>';
+                
+                data.users.forEach(user => {
+                    html += `<tr>
+                        <td>${user.username}</td>
+                        <td>${user.allow_parentheses ? '✓' : '✗'}</td>
+                        <td>${user.allow_exponents ? '✓' : '✗'}</td>
+                        <td>
+                            <button onclick="toggleRestriction(${user.id}, 'parentheses', ${!user.allow_parentheses})" 
+                                    style="padding: 5px 10px; margin: 2px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                ${user.allow_parentheses ? 'Disable' : 'Enable'} Paren
+                            </button>
+                            <button onclick="toggleRestriction(${user.id}, 'exponents', ${!user.allow_exponents})" 
+                                    style="padding: 5px 10px; margin: 2px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                ${user.allow_exponents ? 'Disable' : 'Enable'} Exp
+                            </button>
+                            <button onclick="removeUserFromTenancy(${user.id}, '${user.username}')" 
+                                    style="padding: 5px 10px; margin: 2px; background: #f44336; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                Remove from Tenant
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                html += '<button onclick="closeAdminPanel()" style="margin-top: 15px; padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>';
+                html += '</div>';
+                html += '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;" onclick="closeAdminPanel()"></div>';
+                
+                document.body.insertAdjacentHTML('beforeend', html);
+            } catch (error) {
+                showError('Failed to load user settings: ' + error.message);
+            }
+        }
+        
+        
+        async function showTenantAssignment() {
+            // Remove any existing modals first to prevent overlay stacking
+            removeAllModals();
+            
+            try {
+                const response = await fetch('/admin/assign-tenant');
+                const data = await response.json();
+                
+                let html = '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 1000; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto;">';
+                html += '<h2 style="margin-bottom: 20px;">Manage Tenant Users</h2>';
+                
+                // Add User by Email Section
+                html += '<div style="margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">';
+                html += '<h3 style="margin-bottom: 10px; color: #333;">Add New User by Email</h3>';
+                html += '<form id="createUserForm" onsubmit="createUserByEmail(event); return false;" style="display: flex; gap: 10px; flex-wrap: wrap;">';
+                html += '<input type="text" id="newUserEmail" placeholder="user@example.com" required style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;">';
+                html += '<input type="text" id="newUsername" placeholder="Username (optional)" style="flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;">';
+                html += '<button type="submit" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500;">Add User</button>';
+                html += '</form>';
+                html += '<p style="margin-top: 8px; font-size: 0.85rem; color: #666;">User will be created and automatically assigned to your tenant. They can login via Google SSO.</p>';
+                html += '</div>';
+                
+                if (data.users_without_tenant && data.users_without_tenant.length > 0) {
+                    html += '<div style="margin: 15px 0;">';
+                    html += '<h3 style="margin-bottom: 10px;">Users Without Tenant Assignment:</h3>';
+                    html += '<table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">';
+                    html += '<thead><tr style="background: #f5f5f5;"><th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Username</th><th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Email</th><th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Action</th></tr></thead>';
+                    html += '<tbody>';
+                    
+                    data.users_without_tenant.forEach(user => {
+                        html += `<tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${user.username || 'N/A'}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${user.email || 'N/A'}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">
+                                <button onclick="assignUserToTenant(${user.id})" 
+                                        style="padding: 5px 10px; background: #9C27B0; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                    Assign to My Tenant
+                                </button>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    html += '</div>';
+                } else {
+                    html += '<p style="padding: 20px; color: #666;">No users without tenant assignment.</p>';
+                }
+                
+                html += '<button onclick="closeTenantAssignment()" style="margin-top: 15px; padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>';
+                html += '</div>';
+                html += '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;" onclick="closeTenantAssignment()"></div>';
+                
+                document.body.insertAdjacentHTML('beforeend', html);
+            } catch (error) {
+                showError('Failed to load tenant assignment: ' + error.message);
+            }
+        }
+        
+        async function assignUserToTenant(userId) {
+            try {
+                // Get current user's tenant_id from session (we'll need to get it from the server)
+                const response = await fetch('/check-auth');
+                const authData = await response.json();
+                
+                if (!authData.tenant_id) {
+                    showError('You must be assigned to a tenant to assign others');
+                    return;
+                }
+                
+                const assignResponse = await fetch('/admin/assign-tenant', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: userId,
+                        tenant_id: authData.tenant_id
+                    })
+                });
+                
+                const data = await assignResponse.json();
+                
+                if (assignResponse.ok && data.success) {
+                    showError('User assigned successfully!', 'success');
+                    // Remove existing modal first, then refresh
+                    removeAllModals();
+                    showTenantAssignment(); // Refresh
+                } else {
+                    showError(data.error || 'Failed to assign user');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+        
+        async function createUserByEmail(event) {
+            event.preventDefault();
+            let emailValue = document.getElementById('newUserEmail').value.trim();
+            const usernameValue = document.getElementById('newUsername').value.trim() || null;
+            
+            if (!emailValue) {
+                showError('Email is required');
+                return;
+            }
+            
+            // Basic email validation - simple check for @ and .
+            // Simple validation - just check for @ and basic structure
+            const atIndex = emailValue.indexOf('@');
+            if (atIndex <= 0 || atIndex >= emailValue.length - 1) {
+                showError('Please enter a valid email address (e.g., user@example.com)');
+                return;
+            }
+            
+            const parts = emailValue.split('@');
+            if (parts.length !== 2 || !parts[0] || !parts[1]) {
+                showError('Please enter a valid email address (e.g., user@example.com)');
+                return;
+            }
+            
+            // Check domain has a dot
+            if (!parts[1].includes('.')) {
+                showError('Please enter a valid email address with domain (e.g., user@example.com)');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/create-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: emailValue, username: usernameValue })
+                });
+                
+                // Check if response is OK before parsing JSON
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server error:', response.status, errorText);
+                    let errorMsg = 'Failed to create user';
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMsg = errorData.error || errorMsg;
+                        
+                        // Make error message more user-friendly
+                        const errorLower = errorMsg.toLowerCase();
+                        if (errorLower.includes('already exists') || errorLower.includes('email already')) {
+                            errorMsg = 'This email is already registered. Use "Assign Users to Tenant" to add them to your tenant instead.';
+                        }
+                    } catch (e) {
+                        errorMsg = errorText || errorMsg;
+                    }
+                    showError(errorMsg);
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showError(`User ${data.user?.username || emailValue} created successfully!`, 'success');
+                    document.getElementById('newUserEmail').value = '';
+                    document.getElementById('newUsername').value = '';
+                    // Remove existing modal first, then refresh
+                    removeAllModals();
+                    showTenantAssignment(); // Refresh
+                } else {
+                    // Show user-friendly error message
+                    let errorMsg = data.error || 'Failed to create user';
+                    const errorLower = errorMsg.toLowerCase();
+                    
+                    // Handle different error types
+                    if (errorLower.includes('already exists') || errorLower.includes('email already')) {
+                        errorMsg = 'This email is already registered. Use "Assign Users to Tenant" to add them to your tenant instead.';
+                    } else if (errorLower.includes('pattern') || errorLower.includes('string') || errorLower.includes('match') || errorLower.includes('expected pattern')) {
+                        errorMsg = 'Invalid email format. Please check the email address and try again.';
+                    } else if (errorLower.includes('invalid email')) {
+                        errorMsg = 'Please enter a valid email address (e.g., user@example.com)';
+                    }
+                    
+                    console.error('Create user error:', errorMsg, 'Original:', data.error);
+                    showError(errorMsg);
+                }
+            } catch (error) {
+                // Handle different error types
+                let errorMsg = error.message || 'Unknown error';
+                
+                // Check if it's the browser's pattern validation error
+                if (errorMsg.includes('pattern') || errorMsg.includes('match') || errorMsg.includes('expected pattern')) {
+                    errorMsg = 'Invalid email format. Please enter a valid email address (e.g., user@example.com)';
+                } else if (errorMsg.includes('NetworkError') || errorMsg.includes('Failed to fetch')) {
+                    errorMsg = 'Network error. Please check your connection and try again.';
+                } else {
+                    errorMsg = 'Error: ' + errorMsg;
+                }
+                
+                console.error('Create user error:', error);
+                showError(errorMsg);
+            }
+        }
+        
+        function closeTenantAssignment() {
+            // Remove all modals and overlays
+            removeAllModals();
+        }
+        
+        function closeAuditLogs() {
+            // Remove all modals and overlays
+            removeAllModals();
+        }
+        async function toggleRestriction(userId, type, enable) {
+            try {
+                const payload = {};
+                if (type === 'parentheses') {
+                    payload.allow_parentheses = enable;
+                } else {
+                    payload.allow_exponents = enable;
+                }
+                
+                const response = await fetch(`/admin/user-settings/${userId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Remove existing modal first, then refresh
+                    removeAllModals();
+                    showAdminPanel(); // Refresh
+                } else {
+                    showError(data.error || 'Failed to update settings');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+        
+        async function removeUserFromTenancy(userId, username) {
+            if (!confirm(`Are you sure you want to remove ${username} from your tenant? They will need to be reassigned to access the system.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/remove-tenant', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: userId })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showError(`User ${username} removed from tenant successfully!`, 'success');
+                    // Remove existing modal first, then refresh
+                    removeAllModals();
+                    showAdminPanel(); // Refresh
+                } else {
+                    showError(data.error || 'Failed to remove user from tenant');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+        
+        function removeAllModals() {
+            // Remove all modals and overlays to prevent stacking
+            // Use direct DOM removal to avoid recursion
+            const panels = document.querySelectorAll('[style*="position: fixed"]');
+            panels.forEach(p => p.remove());
+        }
+        
+        function closeAdminPanel() {
+            // Remove all modals and overlays
+            removeAllModals();
+        }
+        
+        async function showAuditLogs() {
+            // Remove any existing modals first to prevent overlay stacking
+            removeAllModals();
+            
+            try {
+                // Get list of users first
+                const usersResponse = await fetch('/audit/users');
+                const usersData = await usersResponse.json();
+                
+                // Get audit logs
+                const logsResponse = await fetch('/audit?limit=500');
+                const logsData = await logsResponse.json();
+                
+                let html = '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 1000; max-width: 95%; max-height: 85vh; overflow-y: auto; width: 1000px;">';
+                html += '<h2 style="margin-bottom: 15px;">Audit Logs</h2>';
+                
+                // Search and filter controls
+                html += '<div style="margin-bottom: 15px; padding: 15px; background: #f5f5f5; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; align-items: end;">';
+                
+                // Search bar
+                html += '<div>';
+                html += '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Search:</label>';
+                html += '<input type="text" id="auditSearchBar" placeholder="Search all columns: user, action, expression, result, IP, timestamp..." onkeyup="filterAuditLogs()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;">';
+                html += '</div>';
+                
+                // User filter dropdown
+                html += '<div>';
+                html += '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Filter by User:</label>';
+                html += '<select id="auditUserFilter" onchange="filterAuditLogs()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;">';
+                html += '<option value="">All Users</option>';
+                usersData.users.forEach(user => {
+                    html += `<option value="${user.id}">${user.username} (${user.log_count} logs)</option>`;
+                });
+                html += '</select>';
+                html += '</div>';
+                
+                // Action type filter
+                html += '<div>';
+                html += '<label style="display: block; margin-bottom: 5px; font-weight: bold;">Filter by Action:</label>';
+                html += '<select id="auditActionFilter" onchange="filterAuditLogs()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;">';
+                html += '<option value="">All Actions</option>';
+                html += '<option value="calculate">Calculate</option>';
+                html += '<option value="login">Login</option>';
+                html += '<option value="logout">Logout</option>';
+                html += '<option value="update_user_settings">Settings Update</option>';
+                html += '<option value="calculate_denied">Denied Calculations</option>';
+                html += '</select>';
+                html += '</div>';
+                html += '</div>';
+                
+                // Results count
+                html += '<div id="auditResultsCount" style="margin-bottom: 10px; padding: 8px; background: #e3f2fd; border-radius: 5px; font-weight: bold;">';
+                html += `Showing ${logsData.logs.length} log entries`;
+                html += '</div>';
+                
+                // Logs table
+                html += '<div style="overflow-x: auto;">';
+                html += '<table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">';
+                html += '<thead><tr style="background: #f5f5f5; position: sticky; top: 0; z-index: 10;">';
+                html += '<th style="padding: 10px; border: 1px solid #ddd; text-align: left; cursor: pointer;" onclick="sortAuditLogs(\'username\')">User ↕</th>';
+                html += '<th style="padding: 10px; border: 1px solid #ddd; text-align: left; cursor: pointer;" onclick="sortAuditLogs(\'action\')">Action ↕</th>';
+                html += '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Expression</th>';
+                html += '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Result</th>';
+                html += '<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">IP Address</th>';
+                html += '<th style="padding: 10px; border: 1px solid #ddd; text-align: left; cursor: pointer;" onclick="sortAuditLogs(\'timestamp\')">Timestamp ↕</th>';
+                html += '</tr></thead><tbody id="auditLogsBody">';
+                
+                logsData.logs.forEach(log => {
+                    // Add data attributes for all searchable columns
+                    html += `<tr data-user-id="${log.user_id || ''}" 
+                                  data-action="${(log.action || '').toLowerCase()}" 
+                                  data-username="${(log.username || '').toLowerCase()}" 
+                                  data-expression="${(log.expression || '').toLowerCase()}" 
+                                  data-result="${(log.result || '').toLowerCase()}"
+                                  data-ip-address="${(log.ip_address || '').toLowerCase()}"
+                                  data-user-agent="${(log.user_agent || '').toLowerCase()}"
+                                  data-timestamp="${(log.timestamp || '').toLowerCase()}"
+                                  data-resource="${(log.resource || '').toLowerCase()}">`;
+                    html += `<td style="padding: 8px; border: 1px solid #ddd;">${log.username || 'N/A'}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #ddd;"><span style="padding: 3px 8px; background: ${getActionColor(log.action)}; color: white; border-radius: 3px; font-size: 0.75rem;">${log.action || ''}</span></td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${log.expression || ''}">${log.expression || ''}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; max-width: 150px; overflow: hidden; text-overflow: ellipsis;" title="${log.result || ''}">${log.result || ''}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #ddd; font-size: 0.8rem;">${log.ip_address || ''}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #ddd; font-size: 0.8rem;">${log.timestamp || ''}</td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+                html += '</div>';
+                html += '<button onclick="closeAuditLogs()" style="margin-top: 15px; padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>';
+                html += '</div>';
+                html += '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;" onclick="closeAuditLogs()"></div>';
+                
+                document.body.insertAdjacentHTML('beforeend', html);
+                
+                // Store logs data for filtering
+                window.auditLogsData = logsData.logs;
+                window.auditSortDirection = {};
+            } catch (error) {
+                showError('Failed to load audit logs: ' + error.message);
+            }
+        }
+        
+        function getActionColor(action) {
+            const colors = {
+                'calculate': '#4CAF50',
+                'login': '#2196F3',
+                'logout': '#FF9800',
+                'update_user_settings': '#9C27B0',
+                'calculate_denied': '#f44336'
+            };
+            return colors[action] || '#757575';
+        }
+        
+        function filterAuditLogs() {
+            const searchValue = document.getElementById('auditSearchBar').value.toLowerCase();
+            const userFilter = document.getElementById('auditUserFilter').value;
+            const actionFilter = document.getElementById('auditActionFilter').value;
+            const rows = document.querySelectorAll('#auditLogsBody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const userId = row.getAttribute('data-user-id');
+                const action = row.getAttribute('data-action') || '';
+                const username = row.getAttribute('data-username') || '';
+                const expression = row.getAttribute('data-expression') || '';
+                const result = row.getAttribute('data-result') || '';
+                const ipAddress = row.getAttribute('data-ip-address') || '';
+                const userAgent = row.getAttribute('data-user-agent') || '';
+                const timestamp = row.getAttribute('data-timestamp') || '';
+                const resource = row.getAttribute('data-resource') || '';
+                
+                // User filter - convert both to strings for reliable comparison
+                const userMatch = !userFilter || String(userId) === String(userFilter);
+                
+                // Action filter
+                const actionMatch = !actionFilter || action === actionFilter;
+                
+                // Search filter - searches ALL columns: username, action, expression, result, IP address, user agent, timestamp, resource
+                const searchMatch = !searchValue || 
+                    username.includes(searchValue) || 
+                    action.includes(searchValue) ||
+                    expression.includes(searchValue) || 
+                    result.includes(searchValue) ||
+                    ipAddress.includes(searchValue) ||
+                    userAgent.includes(searchValue) ||
+                    timestamp.includes(searchValue) ||
+                    resource.includes(searchValue);
+                
+                if (userMatch && actionMatch && searchMatch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Update results count
+            const countDiv = document.getElementById('auditResultsCount');
+            if (countDiv) {
+                countDiv.textContent = `Showing ${visibleCount} of ${rows.length} log entries`;
+            }
+        }
+        
+        function sortAuditLogs(column) {
+            const tbody = document.getElementById('auditLogsBody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const direction = window.auditSortDirection[column] || 'asc';
+            
+            rows.sort((a, b) => {
+                let aVal, bVal;
+                
+                if (column === 'timestamp') {
+                    aVal = a.cells[5].textContent.trim();
+                    bVal = b.cells[5].textContent.trim();
+                } else if (column === 'username') {
+                    aVal = a.cells[0].textContent.trim().toLowerCase();
+                    bVal = b.cells[0].textContent.trim().toLowerCase();
+                } else if (column === 'action') {
+                    aVal = a.cells[1].textContent.trim().toLowerCase();
+                    bVal = b.cells[1].textContent.trim().toLowerCase();
+                }
+                
+                if (direction === 'asc') {
+                    return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+                } else {
+                    return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+                }
+            });
+            
+            // Clear and re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Toggle direction for next sort
+            window.auditSortDirection[column] = direction === 'asc' ? 'desc' : 'asc';
+        }
+        
+        function closeAuditLogs() {
+            const panels = document.querySelectorAll('[style*="position: fixed"]');
+            panels.forEach(p => p.remove());
+            window.auditLogsData = null;
+        }
+        {% endif %}
+        
+        // Allow keyboard input
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            
+            // Check restrictions before allowing parentheses/exponents
+            if (key === '(' || key === ')') {
+                if (!userSettings.allow_parentheses) {
+                    showError('Parentheses are not allowed for your account');
+                    return;
+                }
+            }
+            if (key === '^') {
+                if (!userSettings.allow_exponents) {
+                    showError('Exponents are not allowed for your account');
+                    return;
+                }
+            }
+            
+            if ('0123456789+-*/^()'.includes(key)) {
+                appendToExpression(key);
+            } else if (key === '%') {
+                convertToPercentage();
+            } else if (key === 'Enter') {
+                calculateResult();
+            } else if (key === 'Escape') {
+                clearAll();
+            } else if (key === 'Backspace') {
+                backspace();
+            }
+        });
+        
+        // Initialize display and check authentication
+        checkAuth();
+        updateDisplay();
+        
+        // Ensure buttons are visible on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUIForRestrictions();
+        });
+        
+        // Also call it immediately if DOM is already loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateUIForRestrictions);
+        } else {
+            updateUIForRestrictions();
+        }
+    </script>
+</body>
+</html>

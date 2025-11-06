@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Pending</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .username {
+            font-weight: bold;
+            color: #2575fc;
+        }
+        
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid #2575fc;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #2575fc;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            list-style-position: inside;
+            color: #666;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+        }
+        
+        .logout-btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: #e02e24;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔒</div>
+        <h1>Access Pending</h1>
+        <p>
+            Hello <span class="username">{{ username }}</span>, your account has been created successfully!
+        </p>
+        <p>
+            However, you haven't been assigned to a tenant yet. Please contact your administrator to grant you access.
+        </p>
+        
+        <div class="info-box">
+            <h3>What does this mean?</h3>
+            <ul>
+                <li>Your account is active but needs tenant assignment</li>
+                <li>An administrator must assign you to a tenant to access the calculator</li>
+                <li>Once assigned, you'll be able to use all features</li>
+            </ul>
+        </div>
+        
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <script>
+        async function logout() {
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>
